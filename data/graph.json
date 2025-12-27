@@ -1,0 +1,61 @@
+{
+  "nodes": ["Kadıköy", "Moda", "Fikirtepe", "Üsküdar","Acıbadem","Koşuyolu","Göztepe","Bostancı"],
+
+  "edges": [
+    {"from": "Kadıköy", "to": "Moda", "weight": 2},
+    {"from": "Kadıköy", "to": "Fikirtepe", "weight": 3},
+    {"from": "Moda", "to": "Üsküdar", "weight": 4},
+    {"from": "Fikirtepe", "to": "Üsküdar", "weight": 2},
+    {"from": "Üsküdar", "to": "Acıbadem", "weight": 3},
+    {"from": "Acıbadem", "to": "Koşuyolu", "weight": 2},
+    {"from": "Koşuyolu", "to": "Göztepe", "weight": 4},
+    {"from": "Göztepe", "to": "Bostancı", "weight": 3},
+    {"from": "Kadıköy", "to": "Göztepe", "weight": 5},
+    {"from": "Fikirtepe", "to": "Acıbadem", "weight": 4},
+    {"from": "Moda", "to": "Göztepe", "weight": 4},
+    {"from": "Bostancı", "to": "Kadıköy", "weight": 6}
+  ],
+
+  "pharmacies": [
+  {
+    "name": "Taner Eczanesi",
+    "location": "Moda",
+    "stock": ["Parol", "Nurofen", "Arveles", "Ventolin"]
+  },
+  {
+    "name": "Sakura Eczanesi",
+    "location": "Üsküdar",
+    "stock": ["Augmentin", "Amoklavin", "Cipro", "Norvasc"]
+  },
+  {
+    "name": "Göztepe Merkez Eczanesi",
+    "location": "Göztepe",
+    "stock": ["Parol", "Nurofen", "Dolven", "Ventolin Nebul"]
+  },
+  {
+    "name": "Bostancı Sahil Eczanesi",
+    "location": "Bostancı",
+    "stock": ["Metformin", "Dolven", "Euthyrox"]
+  },
+  {
+    "name": "Acıbadem Eczanesi",
+    "location": "Acıbadem",
+    "stock": ["Parol", "Coraspin", "Augmentin", "Insulin"]
+  },
+  {
+    "name": "Koşuyolu Eczanesi",
+    "location": "Koşuyolu",
+    "stock": ["Ventolin", "Ventolin Nebul", "Norvasc"]
+  },
+  {
+    "name": "Fikirtepe Sağlık Eczanesi",
+    "location": "Fikirtepe",
+    "stock": ["Parol", "Aferin", "Amoklavin"]
+  },
+  {
+    "name": "Kadıköy Çarşı Eczanesi",
+    "location": "Kadıköy",
+    "stock": ["Parol", "Ventolin", "Coraspin", "Euthyrox", "Insulin", "Metformin"]
+  }
+]
+}

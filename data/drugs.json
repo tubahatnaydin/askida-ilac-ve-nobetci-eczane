@@ -1,0 +1,17 @@
+[
+  {"name": "Parol","price": 50,"criticality": 10,"category": "Ağrı kesici"},
+  {"name": "Ventolin","price": 180,"criticality": 40,"category": "Astım"},
+  {"name": "Augmentin","price": 220,"criticality": 35,"category":"Antibiyotik"},
+  {"name": "Euthyrox","price": 90,"criticality": 25,"category": "Tiroid"},
+  {"name": "Coraspin","price": 60,"criticality": 30,"category": "Kalp"},
+  {"name": "Nurofen", "price": 95, "criticality": 12, "category": "Ağrı kesici"},
+  {"name": "Arveles", "price": 110, "criticality": 18, "category": "Agri Kesici"},
+  {"name": "Dolven", "price": 85, "criticality": 11, "category": "Ağrı kesici"},
+  {"name": "Aferin", "price": 80, "criticality": 16, "category": "Soğuk algınlığı"},
+  {"name": "Amoklavin", "price": 200, "criticality": 32, "category": "Antibiyotik"},
+  {"name": "Cipro", "price": 170, "criticality": 30, "category": "Antibiyotik"},
+  {"name": "Metformin", "price": 120, "criticality": 28, "category": "Diyabet"},
+  {"name": "Insulin", "price": 350, "criticality": 50, "category": "Diyabet"},
+  {"name": "Norvasc", "price": 140, "criticality": 27, "category": "Tansiyon"},
+  {"name": "Ventolin Nebul", "price": 210, "criticality": 42, "category": "Astım"}
+]

@@ -1,28 +1,29 @@
 import json
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+TEMEL_DIZIN = Path(__file__).resolve().parent
 
-def load_drugs():
-    drugs_path = BASE_DIR / "data" / "drugs.json"
+def ilaclari_yukle():
+    ilac_yolu = TEMEL_DIZIN / "data" / "drugs.json"
 
-    with open(drugs_path, "r", encoding="utf-8") as f:
-        drugs_list = json.load(f)
+    with open(ilac_yolu, "r", encoding="utf-8") as dosya:
+        ilac_listesi = json.load(dosya)
 
-    drug_map = {}
-    for d in drugs_list:
-        name = d["name"]
-        drug_map[name] = {
-            "price": int(d["price"]),"criticality":int(d["criticality"]),"category": d.get("category","Bilinmiyor")}
+    ilac_sozlugu = {}
 
-    return drug_map
+    for ilac in ilac_listesi:
+        ad = ilac["name"]
+        ilac_sozlugu[ad] = {
+            "price": int(ilac["price"]),"criticality":int(ilac["criticality"]),"category": ilac.get("category","Bilinmiyor")}
 
-def load_graph():
+    return ilac_sozlugu
+
+def yukle_graph():
     import json
     from pathlib import Path
 
-    BASE_DIR = Path(__file__).resolve().parent
-    path = BASE_DIR / "data" / "graph.json"
+    TEMEL_DIZIN = Path(__file__).resolve().parent
+    graph_yolu = TEMEL_DIZIN / "data" / "graph.json"
 
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    with open(graph_yolu, "r", encoding="utf-8") as dosya:
+        return json.load(dosya)

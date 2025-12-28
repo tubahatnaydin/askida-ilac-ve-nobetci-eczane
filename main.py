@@ -1,10 +1,9 @@
 from ds.graph import Graph
-from io_yard import load_graph, load_drugs
+from io_yard import ilaclari_yukle, yukle_graph
 from ds.yigin import Stack
 from ds.sort_search import mergesort, binary_search
 from ds.heap_oncelik_kuyrugu import PriorityQueue
 import time
-from io_yard import load_drugs
 from ds.trie import Trie
 
 kasa = 0
@@ -13,9 +12,9 @@ oncelik_kuyrugu = PriorityQueue()
 teslim_kayitlari = []
 undo_yigin = Stack()
 
-ilac_haritasi = load_drugs()
+ilac_haritasi = ilaclari_yukle()
 
-graf_verisi = load_graph()
+graf_verisi = yukle_graph()
 graph = Graph()
 
 for kenar in graf_verisi["edges"]:

@@ -1,41 +1,32 @@
 from ds.graph import Graph
-from io_utils import load_graph
-from ds.stack import Stack
+from io_yard import load_graph, load_drugs
+from ds.yigin import Stack
 from ds.sort_search import mergesort, binary_search
-from ds.heap_pq import PriorityQueue
+from ds.heap_oncelik_kuyrugu import PriorityQueue
 import time
-from io_utils import load_drugs
+from io_yard import load_drugs
 from ds.trie import Trie
-
-# ASKIDA İLAÇ VE NÖBETÇİ ECZANE SİSTEMİ
-# Veri Yapıları ve Algoritmalar Projesi
-# Kullanılanlar:
-# Trie: ilaç adında prefix arama ve öneri
-# PriorityQueue (Heap): hastaları öncelik puanına göre sıralama
-# Stack: son bağışı geri alma (UNDO) -> LIFO
-# MergeSort + Binary Search: teslim kayıtlarını TC’ye göre sırala/ara
-# Graph + Dijkstra: en kısa yol ile nöbetçi eczane seçimi ve rota çıkarma
-# JSON I/O: drugs.json ve graph.json üzerinden veri yükleme
 
 kasa = 0
 
-pq = PriorityQueue()
-teslimler = []
-undo_stack = Stack()
+oncelik_kuyrugu = PriorityQueue()
+teslim_kayitlari = []
+undo_yigin = Stack()
 
-drug_map = load_drugs()
+ilac_haritasi = load_drugs()
 
-graph_data = load_graph()
+graf_verisi = load_graph()
 graph = Graph()
 
-for edge in graph_data["edges"]:
-    graph.add_edge(edge["from"], edge["to"], edge["weight"])
+for kenar in graf_verisi["edges"]:
+    graph.kenar_ekle(kenar["from"], kenar["to"], kenar["weight"])
 
 trie = Trie()
-for ilac_adi in drug_map.keys():
+
+for ilac_adi in ilac_haritasi.keys():
     trie.insert(ilac_adi)
 
-print("Yüklenen ilaçlar:", list(drug_map.keys()))
+print("Yüklenen ilaçlar:", list(ilac_haritasi.keys()))
 
 while(True):
 
@@ -71,41 +62,36 @@ while(True):
                 miktar = int(input("Bağış miktarını TL cinsinden giriniz: "))
                 kasa = kasa + miktar
 
-                undo_stack.push(("DONATION", miktar)) 
+                undo_yigin.push(("DONATION", miktar)) 
                 # bir bağış yapıldı, miktarı stacke'e attık. LIFO (en son bağış en üstte)
 
                 print("\nBağış işleminiz başarıyla gerçekleştirildi.")
                 print("\nKasadaki toplam para: {} TL'dir\n".format(kasa))
                 
-                if len(pq) == 0:
+                if len(oncelik_kuyrugu) == 0:
                     print("Sırada bekleyen yok\n")
                 
                 else:
                     teslim_sayisi = 0
                     MAX_TESLIM = 5
                     
-                    # Bağış sonrası otomatik teslim akışı:
-                    # Kasadaki para yeterse en öncelikli hastaya teslim yapılır
-                    # Maksimum 5 teslim (kota)
-                    # Para yetmezse durur
+                    # bağış sonrası otomatik teslim akışı:
+                    # kasadaki para yeterse en öncelikli hastaya teslim yapılır
+                    # maks 5 teslim (kota)
+                    # para yetmezse durur
 
-                    while len(pq) > 0 and (teslim_sayisi < MAX_TESLIM):
-                        hasta = pq.peek() # en öncelikli kişi
-                        wait_minutes = int((time.time() - hasta["created_at"]) // 60)
-
-                        # Not: Heap içinde elemanın prioritysini değiştirmek heap düzenini bozabilir
-                        # Bu yüzden burada priority güncellemesi yapılmıyor
-
-                        # hasta["priority"] = (100 * hasta["is_emergency"] + wait_minutes + drug_map[hasta["ilac"]]["criticality"])
+                    while len(oncelik_kuyrugu) > 0 and (teslim_sayisi < MAX_TESLIM):
+                        hasta = oncelik_kuyrugu.peek() # en öncelikli kişi
+                        bekleme_dakika = int((time.time() - hasta["kayit_zamani"]) // 60)
 
                         hangi_ilac = hasta["ilac"]
-                        fiyat = drug_map[hangi_ilac]["price"]
+                        fiyat = ilac_haritasi[hangi_ilac]["price"]
 
                         if kasa >= fiyat:
-                            teslim_edilen = pq.pop() # ilk kişiyi sıradan çıkart
+                            teslim_edilen = oncelik_kuyrugu.pop() # ilk kişiyi sıradan çıkart
                             kasa = kasa - fiyat
 
-                            teslimler.append([teslim_edilen["ad"], teslim_edilen["tc"], teslim_edilen["ilac"],fiyat]) 
+                            teslim_kayitlari.append([teslim_edilen["ad"], teslim_edilen["tc"], teslim_edilen["ilac"],fiyat]) 
                             #'teslim kaydı [ad, tc, ilaç, fiyat]
 
                             print("Teslim yapıldı ->",teslim_edilen["ad"],"-", teslim_edilen["ilac"])
@@ -146,17 +132,17 @@ while(True):
                 acil = input("\nAciliyet olarak önceliğiniz var mı? (E/H)")
 
                 acil = acil.strip().upper()
-                is_emergency = 1 if acil == "E" else 0
+                acil_mi = 1 if acil == "E" else 0
 
                 
                 print("\nMevcut ilaçlar:\n")
 
-                for ilac_adi, info in drug_map.items():
+                for ilac_adi, info in ilac_haritasi.items():
                     print(ilac_adi,"-",info["category"],"-","(",info["price"],"TL )")
 
                 prefix = input("\nAramak istediğiniz ilacın baştan en az bir harfini giriniz: ").strip()
 
-                oneriler = trie.starts_with(prefix, limit=5)
+                oneriler = trie.prefix_ara(prefix, limit=5)
 
                 if not oneriler:
                     print("\nBu harfle başlayan ilaç yok.")
@@ -183,7 +169,7 @@ while(True):
                 # büyük/küçük harf fark etmesin diye
                 secim_norm = hangi_ilac.strip().lower()
                 
-                for gerçek_isim in drug_map.keys():
+                for gerçek_isim in ilac_haritasi.keys():
                     
                     if gerçek_isim.lower() == secim_norm:
                         hangi_ilac = gerçek_isim
@@ -192,36 +178,36 @@ while(True):
 
                 print("\nSeçilen ilaç:", hangi_ilac)
                 
-                created_at = time.time()
-                wait_minutes = 0
+                kayit_zamani = time.time()
+                bekleme_dakika = 0
 
-                # Öncelik puanı:
-                # Acil ise +100
-                # İlaç kritiklik puanı eklenir (drugs.json)
-                # Not: wait_minutes burada 0 tutuldu
+                # öncelik puanı
+                # acil ise +100
+                # ilaç kritiklik puanı eklenir (drugs.json)
+                # not -> bekleme_dakika burada 0 tutuldu
 
-                priority = 100 * is_emergency + wait_minutes + drug_map[hangi_ilac]["criticality"]
+                oncelik_puani = 100 * acil_mi + bekleme_dakika + ilac_haritasi[hangi_ilac]["criticality"]
 
-                request = {"ad": ad_soyad,"tc": tc,"ilac": hangi_ilac,"is_emergency": is_emergency,"created_at": created_at,"priority": priority}
+                istek = {"ad": ad_soyad,"tc": tc,"ilac": hangi_ilac,"acil_mi": acil_mi,"kayit_zamani": kayit_zamani,"oncelik": oncelik_puani}
 
-                pq.push(request)
+                oncelik_kuyrugu.push(istek)
 
                 print("\nSıraya eklendiniz")
-                print("\nÖncelik puanınız:", priority)
-                print("\nBekleyen kişi sayısı:", len(pq), "\n")
+                print("\nÖncelik puanınız:", oncelik_puani)
+                print("\nBekleyen kişi sayısı:", len(oncelik_kuyrugu), "\n")
 
             elif secim2 == "3":
                 
-                # Teslim kayıtları (teslimler):
-                # Liste yapısı: [ad, tc, ilac, fiyat]
-                # Mergesort ile TCye göre sıralıyoruz
-                # Binarysearch ile TCye göre hızlı arama yapıyoruz
+                # tslim kayıtları
+                # liste yapısı: [ad, tc, ilac, fiyat]
+                # mergesort ile TCye göre sıralıyoruz
+                # binarysearch ile TCye göre hızlı arama yapıyoruz
 
                 print("\nSon teslimler seçildi\n")
                 
                 print("SON TESLİMLER\n")
 
-                if len(teslimler) == 0:
+                if len(teslim_kayitlari) == 0:
                     print("Henüz teslim gerçekleşmedi\n")
                 
                 else:
@@ -232,17 +218,17 @@ while(True):
                     alt = input("Seçiminizi tuşlayınız:")
 
                     if alt == "1":
-                        for t in teslimler:
-                            print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL")
+                        for t in teslim_kayitlari:
+                            print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL\n")
                     
                     elif alt == "2":
-                        sirali = mergesort(teslimler, key_index=1)
+                        sirali = mergesort(teslim_kayitlari, key_index=1)
                         for t in sirali:
-                            print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL")
+                            print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL\n")
                     
                     elif alt == "3":
                         tc_ara = input("\nTC giriniz:")
-                        sirali = mergesort(teslimler, key_index=1)
+                        sirali = mergesort(teslim_kayitlari, key_index=1)
                         sonuc = binary_search(sirali, tc_ara)
 
                         if sonuc:
@@ -256,15 +242,15 @@ while(True):
             elif secim2 == "4":
 
                 print("\nBEKLEYEN HASTA DURUMU\n")
-                print("Bekleyen kişi sayısı:",len(pq))
+                print("Bekleyen kişi sayısı:",len(oncelik_kuyrugu))
                 print()
             
             elif secim2 == "5":
-                if len(undo_stack) == 0:
+                if len(undo_yigin) == 0:
                     print("\nGeri alınacak işlem yok\n")
                 
                 else:
-                    son_islem = undo_stack.pop()
+                    son_islem = undo_yigin.pop()
 
                     if son_islem[0] == "DONATION":
                         miktar = son_islem[1]
@@ -286,50 +272,47 @@ while(True):
                 print("\nGeçersiz seçim!\n")
 
     elif secim == "2":
-        # Nöbetçi eczane sorgulama:
-        # 1 - Kullanıcı konumunu al
-        # 2 - Dijkstra ile tüm düğümlere en kısa mesafeleri hesapla
-        # 3 - İstenen ilacı stokta bulunduran eczaneler arasından en yakını seç
-        # 4 - shortest_path ile rota çıkar
+        # nöbetçi eczane sorgulama
+        # kullanıcı konumunu al
+        # dijkstra ile tüm düğümlere en kısa mesafeleri hesapla
+        # istenen ilacı stokta bulunduran eczaneler arasından en yakını seç
 
         print("\nNöbetçi Eczane menüsüne girildi.\n")
         print("NÖBETÇİ ECZANE (EN KISA YOL)\n")
 
         print("Mevcut konumlar:")
-        for n in graph_data["nodes"]:
+        for n in graf_verisi["nodes"]:
             print("-", n)
         
-        start = input("\nBulunduğunuz konumu giriniz: ").strip()
+        baslangic = input("\nBulunduğunuz konumu giriniz: ").strip()
 
         def normalize_tr(text): 
             return text.strip().lower().replace("ı", "i")
-        
-        start_norm = normalize_tr(start)
 
-        start_norm = normalize_tr(start)
+        baslangic_norm = normalize_tr(baslangic)
 
-        matched_start = None
+        eslesen_baslangic = None
 
         for node in graph.adj.keys():
-            if normalize_tr(node) == start_norm:
-                matched_start = node
+            if normalize_tr(node) == baslangic_norm:
+                eslesen_baslangic = node
                 break
         
-        if matched_start is None:
-            print("Geçersiz konum.")
+        if eslesen_baslangic is None:
+            print("\nGeçersiz konum.")
             continue
 
-        start = matched_start
+        baslangic = eslesen_baslangic
 
-        dist, prev = graph.dijkstra(start)
+        mesafe, onceki = graph.dijkstra(baslangic)
 
-        en_yakin = None
+        en_yakin_eczane = None
         min_mesafe = float("inf")
 
         print("\nMevcut ilaçlar:")
         mevcut_ilaclar = set()
 
-        for eczane in graph_data["pharmacies"]:
+        for eczane in graf_verisi["pharmacies"]:
             for ilac in eczane["stock"]:
                 mevcut_ilaclar.add(ilac)
         
@@ -338,7 +321,7 @@ while(True):
 
         prefix = input("\nAradığınız ilacın ilk harflerini giriniz: ").strip()
 
-        oneriler = trie.starts_with(prefix, limit=5)
+        oneriler = trie.prefix_ara(prefix, limit=5)
 
         if not oneriler:
             print("\nBu harflerle başlayan bir ilaç bulunamadı.\n")
@@ -369,26 +352,26 @@ while(True):
 
         istenen_norm = normalize_tr(istenen_ilac)
 
-        for eczane in graph_data["pharmacies"]:
+        for eczane in graf_verisi["pharmacies"]:
             stok_norm = [normalize_tr(i) for i in eczane["stock"]]
 
             if istenen_norm not in stok_norm:
                 continue
 
-            loc = eczane["location"]
+            konum = eczane["location"]
 
-            if dist[loc] < min_mesafe:
-                min_mesafe = dist[loc]
-                en_yakin = eczane
+            if mesafe[konum] < min_mesafe:
+                min_mesafe = mesafe[konum]
+                en_yakin_eczane = eczane
 
-        if en_yakin is None:
+        if en_yakin_eczane is None:
             print("\nBu ilacı stokta bulunduran nöbetçi eczane yok.\n")
             continue
 
-        yol = graph.shortest_path(prev, en_yakin["location"])
+        yol = graph.en_kisa_yol(onceki, en_yakin_eczane["location"])
 
-        print("\nEn yakın nöbetçi eczane:", en_yakin["name"])
-        print("\nStokta bulunan ilaçlar:",", ".join(en_yakin["stock"]))
+        print("\nEn yakın nöbetçi eczane:", en_yakin_eczane["name"])
+        print("\nStokta bulunan ilaçlar:",", ".join(en_yakin_eczane["stock"]))
         print("\nToplam mesafe:", min_mesafe, "km")
         print("Önerilen güzergah:", " -> ".join(yol), "\n")
 

@@ -4,7 +4,7 @@ class Graph:
     def __init__(self):
         self.adj = {}
 
-    def add_edge(self, u, v, w):
+    def kenar_ekle(self, u, v, w):
         if u not in self.adj:
             self.adj[u] = []
         if v not in self.adj:
@@ -14,30 +14,30 @@ class Graph:
         self.adj[v].append((u, w))  # çift yönlü
 
     def dijkstra(self, start):
-        dist = {node: float("inf") for node in self.adj}
-        prev = {node: None for node in self.adj}
+        mesafeler = {node: float("inf") for node in self.adj}
+        oncekiler = {node: None for node in self.adj}
 
-        dist[start] = 0
-        pq = [(0, start)]
+        mesafeler[start] = 0
+        kuyruk = [(0, start)]
 
-        while pq:
-            cur_dist, u = heapq.heappop(pq)
+        while kuyruk:
+            mevcut_mesafe, u = heapq.heappop(kuyruk)
 
-            if cur_dist > dist[u]:
+            if mevcut_mesafe > mesafeler[u]:
                 continue
 
             for v, w in self.adj[u]:
-                alt = dist[u] + w
-                if alt < dist[v]:
-                    dist[v] = alt
-                    prev[v] = u
-                    heapq.heappush(pq, (alt, v))
+                yol = mesafeler[u] + w
+                if yol < mesafeler[v]:
+                    mesafeler[v] = yol
+                    oncekiler[v] = u
+                    heapq.heappush(kuyruk, (yol, v))
 
-        return dist, prev
+        return mesafeler, oncekiler
 
-    def shortest_path(self, prev, target):
-        path = []
+    def en_kisa_yol(self, oncekiler, target):
+        rota = []
         while target is not None:
-            path.append(target)
-            target = prev[target]
-        return path[::-1]
+            rota.append(target)
+            target = oncekiler[target]
+        return rota[::-1]

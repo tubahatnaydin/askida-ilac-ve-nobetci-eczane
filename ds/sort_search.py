@@ -1,42 +1,40 @@
-def mergesort(arr, key_index):
-    if len(arr) <= 1:
-        return arr
+def mergesort(liste, key_index):
+    if len(liste) <= 1:
+        return liste
 
-    mid = len(arr) // 2
-    left = mergesort(arr[:mid], key_index)
-    right = mergesort(arr[mid:], key_index)
+    mid = len(liste) // 2
+    sol = mergesort(liste[:mid], key_index)
+    sag = mergesort(liste[mid:], key_index)
 
-    return merge(left, right, key_index)
+    return merge(sol, sag, key_index)
 
-
-def merge(left, right, key_index):
-    result = []
+def merge(sol, sag, key_index):
+    sonuc = []
     i = j = 0
 
-    while i < len(left) and j < len(right):
-        if left[i][key_index] <= right[j][key_index]:
-            result.append(left[i])
+    while i < len(sol) and j < len(sag):
+        if sol[i][key_index] <= sag[j][key_index]:
+            sonuc.append(sol[i])
             i += 1
         else:
-            result.append(right[j])
+            sonuc.append(sag[j])
             j += 1
 
-    result.extend(left[i:])
-    result.extend(right[j:])
-    return result
+    sonuc.extend(sol[i:])
+    sonuc.extend(sag[j:])
+    return sonuc
 
+def binary_search(sorted_list, tc, tc_index=1):
+    alt = 0
+    ust = len(sorted_list) - 1
 
-def binary_search(sorted_arr, tc, tc_index=1):
-    low = 0
-    high = len(sorted_arr) - 1
-
-    while low <= high:
-        mid = (low + high) // 2
-        if sorted_arr[mid][tc_index] == tc:
-            return sorted_arr[mid]
-        elif sorted_arr[mid][tc_index] < tc:
-            low = mid + 1
+    while alt <= ust:
+        mid = (alt + ust) // 2
+        if sorted_list[mid][tc_index] == tc:
+            return sorted_list[mid]
+        elif sorted_list[mid][tc_index] < tc:
+            alt = mid + 1
         else:
-            high = mid - 1
+            ust = mid - 1
 
     return None

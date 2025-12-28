@@ -1,8 +1,7 @@
 class TrieNode:
     def __init__(self):
         self.children = {}
-        self.is_end = False
-
+        self.kelime_sonu = False
 
 class Trie:
     def __init__(self):
@@ -14,11 +13,11 @@ class Trie:
             if ch not in node.children:
                 node.children[ch] = TrieNode()
             node = node.children[ch]
-        node.is_end = True
+        node.kelime_sonu = True
 
-    def starts_with(self, prefix: str, limit: int = 5):
+    def prefix_ara(self, prefix: str, limit: int = 5):
         
-        # prefix'e göre en fazla (limit) tane öneri döndürür.
+        # prefix'e göre en fazla -liimt- tane öneri döndürür
         
         node = self.root
         for ch in prefix.lower():
@@ -26,15 +25,15 @@ class Trie:
                 return []
             node = node.children[ch]
 
-        results = []
+        sonuclar = []
 
-        def dfs(cur_node, path_chars):
-            if len(results) >= limit:
+        def dfs(suanki_node, yol_ch):
+            if len(sonuclar) >= limit:
                 return
-            if cur_node.is_end:
-                results.append(prefix + "".join(path_chars))
-            for nxt in sorted(cur_node.children.keys()):
-                dfs(cur_node.children[nxt], path_chars + [nxt])
+            if suanki_node.kelime_sonu:
+                sonuclar.append(prefix + "".join(yol_ch))
+            for nxt in sorted(suanki_node.children.keys()):
+                dfs(suanki_node.children[nxt], yol_ch + [nxt])
 
         dfs(node, [])
-        return results
+        return sonuclar

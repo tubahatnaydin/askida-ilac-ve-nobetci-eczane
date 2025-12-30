@@ -1,27 +1,93 @@
-from ds.graph import Graph
-from io_yard import ilaclari_yukle, yukle_graph
-from ds.yigin import Stack
-from ds.sort_search import mergesort, binary_search
-from ds.heap_oncelik_kuyrugu import PriorityQueue
-import time
-from ds.trie import Trie
+"""
+ANA PROGRAM 
+bu dosya tüm sistemin koordinasyonunu sağlar
+kullanıcı menüleri, iş akışları ve modül entegrasyonu burada yapılır
+
+SİSTEM AKIŞI:
+- kullanıcı ana menüden seçim yapar
+- seçime göre alt menülere yönlendirilir
+- işlemler gerçekleştirilir (bağış, talep, teslim, arama)
+- program kullanıcı çıkış yapana kadar devam eder
+"""
+
+from ds.graph import Graph   # graf ve dijkstra algoritması - en kısa yol hesaplama
+from io_yard import ilaclari_yukle, yukle_graph   # JSON veri yükleme fonksiyonları
+from ds.yigin import Stack   # stack (undo) veri yapısı -  geri alma
+from ds.sort_search import mergesort, binary_search   # sıralama ve arama
+from ds.heap_oncelik_kuyrugu import PriorityQueue   # öncelik kuyruğu - acil durum sıralaması
+import time   # zaman işlemleri için - kayıt zamanı ve bekleme süresi hesaplama
+from ds.trie import Trie  # Trie (prefix ağacı) - ilaç öneri sistemi
 
 kasa = 0
+"""
+KASA (FON): 
+- bağışlardan gelen paralar burada birikir
+- hastalara ilaç teslim edildikçe buradan düşülür
+- her bağışta artar her teslimde azalır
+"""
 
 oncelik_kuyrugu = PriorityQueue()
-teslim_kayitlari = []
-undo_yigin = Stack()
+"""
+ÖNCELİK KUYRUĞU:
+- bekleyen hastalar bu kuyrukta sıralanır
+- öncelik puanına göre sıralama yapar (max-heap)
+- öncelik puanı = (acil_mi * 100) + ilaç_kritikliği + bekleme_süresi
+- acil durumlar, kritik ilaç ihtiyacı olanlar öne geçer
+"""
 
+teslim_kayitlari = []
+"""
+TESLİM KAYITLARI:
+- her ilaç teslimi bu listeye kaydedilir
+- her kayıt: [ad, tc, ilaç_adı, fiyat] formatında
+- MergeSort ile TCye göre sıralanabilir
+- BinarySearch ile TCye göre hızlı arama yapılabilir
+"""
+
+undo_yigin = Stack()
+"""
+UNDO YIĞINI (STACK):
+- yapılan bağışlar LIFO ile saklanır
+- son yapılan bağış ilk geri alınır
+- her öğe: ("DONATION", miktar) formatında
+- sadece bağış işlemleri için kullanılır
+"""
+
+# ilaç verilerini yükle - drugs.json
 ilac_haritasi = ilaclari_yukle()
 
+# graf verilerini yükle - graph.json
 graf_verisi = yukle_graph()
+
+"""
+bu projede kenar terimi graf teorisinden geliyor 
+iki semt arasındaki bağlantıyı yani yolu temsil ediyor
+
+her kenarın üç özelliği var:
+hangi semtten başladığı 
+hangi semte gittiği  
+aradaki mesafe (km cinsinden)
+
+ÖR: kadıköyden modaya 2 km bir kenardır 
+toplam 12 kenar var yani 12 farklı yol bağlantısı
+"""
+
+# graf nesnesi oluştur ve kenarları ekle
 graph = Graph()
 
+# graf verisindeki tüm kenarları graf nesnesine ekle
 for kenar in graf_verisi["edges"]:
     graph.kenar_ekle(kenar["from"], kenar["to"], kenar["weight"])
 
+# Trie (prefix ağacı) oluştur ve ilaç isimlerini ekle
 trie = Trie()
+"""
+TRIE NESNESİ:
+- prefix araması için kullanılır
+- kullanıcı ilacın ilk harflerini girdiğinde öneri sunar
+"""
 
+# tüm ilaç isimlerini Trieye ekle
 for ilac_adi in ilac_haritasi.keys():
     trie.insert(ilac_adi)
 
@@ -61,8 +127,9 @@ while(True):
                 miktar = int(input("Bağış miktarını TL cinsinden giriniz: "))
                 kasa = kasa + miktar
 
+                # undo stacke kaydet (geri alma için)
                 undo_yigin.push(("DONATION", miktar)) 
-                # bir bağış yapıldı, miktarı stacke'e attık. LIFO (en son bağış en üstte)
+                # bir bağış yapıldı, miktarı stacke attık -  LIFO (en son bağış en üstte)
 
                 print("\nBağış işleminiz başarıyla gerçekleştirildi.")
                 print("\nKasadaki toplam para: {} TL'dir\n".format(kasa))
@@ -81,7 +148,7 @@ while(True):
 
                     while len(oncelik_kuyrugu) > 0 and (teslim_sayisi < MAX_TESLIM):
                         hasta = oncelik_kuyrugu.peek() # en öncelikli kişi
-                        bekleme_dakika = int((time.time() - hasta["kayit_zamani"]) // 60)
+                        bekleme_dakika = int((time.time() - hasta["kayit_zamani"]) // 60)   # bekleme süresini hesapla(dk)
 
                         hangi_ilac = hasta["ilac"]
                         fiyat = ilac_haritasi[hangi_ilac]["price"]
@@ -118,11 +185,11 @@ while(True):
                 while True:
                     tc = input("TC giriniz (11 hane): ").strip()
 
-                    if not tc.isdigit():
+                    if not tc.isdigit():    # sadece rakam kontrolü
                         print("Hata: T.C. Kimlik Numarası sadece rakamlardan oluşmalıdır")
                         continue
 
-                    if len(tc) != 11:
+                    if len(tc) != 11:   # uzunluk kontrolü
                         print("Hata: TC 11 haneli olmalıdır")
                         continue
 
@@ -132,20 +199,25 @@ while(True):
 
                 acil = acil.strip().upper()
                 acil_mi = 1 if acil == "E" else 0
-
+                """
+                ACİL DURUM:
+                E: Evet -> acil_mi = 1 -> 100 puan
+                H: Hayır -> acil_mi = 0 -> 0 puan
+                """
                 
                 print("\nMevcut ilaçlar:\n")
 
                 for ilac_adi, info in ilac_haritasi.items():
                     print(ilac_adi,"-",info["category"],"-","(",info["price"],"TL )")
 
+                # Trie ile ilaç önerisi
                 prefix = input("\nAramak istediğiniz ilacın baştan en az bir harfini giriniz: ").strip()
 
                 oneriler = trie.prefix_ara(prefix, limit=5)
 
                 if not oneriler:
                     print("\nBu harfle başlayan ilaç yok.")
-                    continue
+                    continue    # menüye geri dön
 
                 print("\nÖneriler:")
                 
@@ -155,7 +227,7 @@ while(True):
                 sec = input("\nSeçmek için numara yaz (iptal için Enter): ").strip()
                 
                 if sec == "":
-                    continue
+                    continue    # iptal
 
                 sec_no = int(sec)
                 
@@ -177,8 +249,9 @@ while(True):
 
                 print("\nSeçilen ilaç:", hangi_ilac)
                 
+                # öncelik puanı hesapla
                 kayit_zamani = time.time()
-                bekleme_dakika = 0
+                bekleme_dakika = 0  # yeni kayıtta bekleme süresi 0
 
                 # öncelik puanı
                 # acil ise +100
@@ -211,23 +284,28 @@ while(True):
                 
                 else:
                     print("1 - Normal Listele")
-                    print("2 - TC'ye göre sırala (MergeSort)")
-                    print("3 - TC ile teslim ara (Binary Search)\n")
+                    print("2 - TC'ye göre sırala")
+                    print("3 - TC ile teslim ara\n")
 
                     alt = input("Seçiminizi tuşlayınız:")
 
-                    if alt == "1":
+                    if alt == "1":    # normal listele
                         for t in teslim_kayitlari:
                             print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL\n")
                     
-                    elif alt == "2":
+                    elif alt == "2": # mergesort ile TCye göre sırala
                         sirali = mergesort(teslim_kayitlari, key_index=1)
                         for t in sirali:
                             print("\nAd Soyad:",t[0],"TC:",t[1],"İlaç:",t[2],"Fiyat:",t[3],"TL\n")
                     
+                    # TC ile ara (binary search)
                     elif alt == "3":
                         tc_ara = input("\nTC giriniz:")
+                        
+                        # önce sırala
                         sirali = mergesort(teslim_kayitlari, key_index=1)
+
+                        # binarysearch ile ara
                         sonuc = binary_search(sirali, tc_ara)
 
                         if sonuc:
@@ -245,16 +323,26 @@ while(True):
                 print()
             
             elif secim2 == "5":
+                """
+                GERİ ALMA (UNDO) İŞLEMİ:
+                - undo stackten son işlemi al
+                - eğer bağış ise, kasadan çıkar
+                - kasayı negatif olmaması için kontrol et
+                - kullanıcıya bilgi ver
+                """
+
                 if len(undo_yigin) == 0:
                     print("\nGeri alınacak işlem yok\n")
                 
                 else:
+                    # stackten son işlemi al - LIFO
                     son_islem = undo_yigin.pop()
 
                     if son_islem[0] == "DONATION":
                         miktar = son_islem[1]
                         kasa = kasa - miktar
                         
+                        # kasa negatif olmamalı
                         if kasa < 0:
                             kasa = 0
                         
@@ -290,6 +378,7 @@ while(True):
 
         baslangic_norm = normalize_tr(baslangic)
 
+        # graf düğümleri arasında eşleşen konumu bul
         eslesen_baslangic = None
 
         for node in graph.adj.keys():
@@ -299,10 +388,11 @@ while(True):
         
         if eslesen_baslangic is None:
             print("\nGeçersiz konum.")
-            continue
+            continue    # ana menü
 
         baslangic = eslesen_baslangic
 
+        # dijkstra ile en kısa yolları hesapla
         mesafe, onceki = graph.dijkstra(baslangic)
 
         en_yakin_eczane = None
@@ -318,6 +408,7 @@ while(True):
         for ilac in sorted(mevcut_ilaclar):
             print("-", ilac)
 
+        # Trie ile ilaç önerisi
         prefix = input("\nAradığınız ilacın ilk harflerini giriniz: ").strip()
 
         oneriler = trie.prefix_ara(prefix, limit=5)

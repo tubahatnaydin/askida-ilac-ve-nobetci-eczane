@@ -5,7 +5,7 @@
   {"name": "Euthyrox","price": 90,"criticality": 25,"category": "Tiroid"},
   {"name": "Coraspin","price": 60,"criticality": 30,"category": "Kalp"},
   {"name": "Nurofen", "price": 95, "criticality": 12, "category": "Ağrı kesici"},
-  {"name": "Arveles", "price": 110, "criticality": 18, "category": "Agri Kesici"},
+  {"name": "Arveles", "price": 110, "criticality": 18, "category": "Ağri Kesici"},
   {"name": "Dolven", "price": 85, "criticality": 11, "category": "Ağrı kesici"},
   {"name": "Aferin", "price": 80, "criticality": 16, "category": "Soğuk algınlığı"},
   {"name": "Amoklavin", "price": 200, "criticality": 32, "category": "Antibiyotik"},

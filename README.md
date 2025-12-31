@@ -82,6 +82,6 @@ nasıl etkin şekilde kullanılabileceğini göstermektedir.
 ---
 
 **Hazırlayanlar:**  
-Tuba Hatun Aydın
-Zeynep Sena Beyhan
-Kanita Abazi
+| Tuba Hatun Aydın |
+| Zeynep Sena Beyhan |
+| Kanita Abazi |
